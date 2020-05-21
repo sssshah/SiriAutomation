@@ -6,9 +6,9 @@ https://blogs.oracle.com/cloud-infrastructure/hey-siri-create-my-container-engin
 
 Description of Files: 
 
-ocirmtf.zip  Used with the Oracle Resource Manager
+ocirmtf.zip  used with the Oracle Resource Manager
 
-tfcreate.sh  Called from iPhone shortcut
+tfcreate.sh  called from iPhone shortcut
 
 main.tf      Terraform script that creates Oracle Cloud Infrastructure Objects and Kubernetes cluster
 
