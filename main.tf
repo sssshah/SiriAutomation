@@ -1,4 +1,4 @@
-// Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+// Copyright (c) 2017, 2019, 2020 Oracle and/or its affiliates. All rights reserved.
 
 variable "tenancy_ocid" {}
 
@@ -15,17 +15,18 @@ variable "clusterName" {
   default = "tfTest-cluster"
 }
 
+// Optional SSH key used for compute nodes in node pool
 variable "node_pool_ssh_public_key" {
-  default = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZUL5w4JXDirnYLwlBjhm8SV/INNuUIKp4WBuEk8WAzin/Zmr6MocUEyB/JijFwTpsp4ZKAreHS1uE/fLsq7G0uPbxKjLx+Y9C2BKeA/jzam1j6WddH6OFx/u2HjwfnowZqqRapltpCJFn5HIk0vV8cbRbWMEeOqUg0AQO3yM+dmMgbIzRmB65coDMhoP2dCDoejZblPwhkhX6r5CxlrPyLFhAJwHkkOAFNmFzvSgymOneCw/eGtZDk1xWHE6iBlbWPdhqlhRoqs0JSdYMXBQgDXclFkAZaky8wf+je3RS2dpVAu4riOBraIOg7w3cHx5AtcBOnX3ArezBC8Vm365t"
+  default = "ssh-rsa AAAAB3NzaC1yxxxxxxxxxxxxOnX3ArezBC8Vm365t"
 }
 
 provider "oci" {
   version          = ">3.0.0"
-  region           = "${var.region}"
-  tenancy_ocid     = "${var.tenancy_ocid}"
-  user_ocid        = "${var.user_ocid}"
-  fingerprint      = "${var.fingerprint}"
-  private_key_path = "${var.private_key_path}"
+  region           = var.region
+  tenancy_ocid     = var.tenancy_ocid
+  user_ocid        = var.user_ocid
+  fingerprint      = var.fingerprint
+  private_key_path = var.private_key_path
 }
 
 data "oci_identity_availability_domain" "ad1" {
@@ -40,86 +41,87 @@ data "oci_identity_availability_domain" "ad2" {
 
 resource "oci_core_vcn" "test_vcn" {
   cidr_block     = "10.0.0.0/16"
-  compartment_id = "${var.compartment_ocid}"
+  compartment_id = var.compartment_ocid
   display_name   = "tfVcnForClusters"
 }
 
 resource "oci_core_internet_gateway" "test_ig" {
-  compartment_id = "${var.compartment_ocid}"
+  compartment_id = var.compartment_ocid
   display_name   = "tfClusterInternetGateway"
-  vcn_id         = "${oci_core_vcn.test_vcn.id}"
+  vcn_id         = oci_core_vcn.test_vcn.id
 }
 
 resource "oci_core_route_table" "test_route_table" {
-  compartment_id = "${var.compartment_ocid}"
-  vcn_id         = "${oci_core_vcn.test_vcn.id}"
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.test_vcn.id
   display_name   = "tfClustersRouteTable"
 
   route_rules {
     destination       = "0.0.0.0/0"
     destination_type  = "CIDR_BLOCK"
-    network_entity_id = "${oci_core_internet_gateway.test_ig.id}"
+    network_entity_id = oci_core_internet_gateway.test_ig.id
   }
 }
 
 resource "oci_core_subnet" "clusterSubnet_1" {
   #Required
-  availability_domain = "${data.oci_identity_availability_domain.ad1.name}"
+  availability_domain = data.oci_identity_availability_domain.ad1.name
   cidr_block          = "10.0.20.0/24"
-  compartment_id      = "${var.compartment_ocid}"
-  vcn_id              = "${oci_core_vcn.test_vcn.id}"
+  compartment_id      = var.compartment_ocid
+  vcn_id              = oci_core_vcn.test_vcn.id
 
   # Provider code tries to maintain compatibility with old versions.
-  security_list_ids = ["${oci_core_vcn.test_vcn.default_security_list_id}"]
+  security_list_ids = [oci_core_vcn.test_vcn.default_security_list_id]
   display_name      = "tfSubNet1ForClusters"
-  route_table_id    = "${oci_core_route_table.test_route_table.id}"
+  route_table_id    = oci_core_route_table.test_route_table.id
 }
 
 resource "oci_core_subnet" "clusterSubnet_2" {
   #Required
-  availability_domain = "${data.oci_identity_availability_domain.ad2.name}"
+  availability_domain = data.oci_identity_availability_domain.ad2.name
   cidr_block          = "10.0.21.0/24"
-  compartment_id      = "${var.compartment_ocid}"
-  vcn_id              = "${oci_core_vcn.test_vcn.id}"
+  compartment_id      = var.compartment_ocid
+  vcn_id              = oci_core_vcn.test_vcn.id
   display_name        = "tfSubNet1ForClusters"
 
   # Provider code tries to maintain compatibility with old versions.
   security_list_ids = ["${oci_core_vcn.test_vcn.default_security_list_id}"]
-  route_table_id    = "${oci_core_route_table.test_route_table.id}"
+  route_table_id    = oci_core_route_table.test_route_table.id
 }
 
 resource "oci_core_subnet" "nodePool_Subnet_1" {
   #Required
-  availability_domain = "${data.oci_identity_availability_domain.ad1.name}"
+  availability_domain = data.oci_identity_availability_domain.ad1.name
   cidr_block          = "10.0.22.0/24"
-  compartment_id      = "${var.compartment_ocid}"
-  vcn_id              = "${oci_core_vcn.test_vcn.id}"
+  compartment_id      = var.compartment_ocid
+  vcn_id              = oci_core_vcn.test_vcn.id
 
   # Provider code tries to maintain compatibility with old versions.
   security_list_ids = ["${oci_core_vcn.test_vcn.default_security_list_id}"]
   display_name      = "tfSubNet1ForNodePool"
-  route_table_id    = "${oci_core_route_table.test_route_table.id}"
+  route_table_id    = oci_core_route_table.test_route_table.id
 }
 
 resource "oci_core_subnet" "nodePool_Subnet_2" {
   #Required
-  availability_domain = "${data.oci_identity_availability_domain.ad2.name}"
+  #Required
+  availability_domain = data.oci_identity_availability_domain.ad2.name
   cidr_block          = "10.0.23.0/24"
-  compartment_id      = "${var.compartment_ocid}"
-  vcn_id              = "${oci_core_vcn.test_vcn.id}"
+  compartment_id      = var.compartment_ocid
+  vcn_id              = oci_core_vcn.test_vcn.id
 
   # Provider code tries to maintain compatibility with old versions.
   security_list_ids = ["${oci_core_vcn.test_vcn.default_security_list_id}"]
   display_name      = "tfSubNet2ForNodePool"
-  route_table_id    = "${oci_core_route_table.test_route_table.id}"
+  route_table_id    = oci_core_route_table.test_route_table.id
 }
 
 resource "oci_containerengine_cluster" "test_cluster" {
   #Required
-  compartment_id     = "${var.compartment_ocid}"
-  kubernetes_version = "${data.oci_containerengine_cluster_option.test_cluster_option.kubernetes_versions.0}"
-  name               = "${var.clusterName}"
-  vcn_id             = "${oci_core_vcn.test_vcn.id}"
+  compartment_id     = var.compartment_ocid
+  kubernetes_version = data.oci_containerengine_cluster_option.test_cluster_option.kubernetes_versions.0
+  name               = var.clusterName
+  vcn_id             = oci_core_vcn.test_vcn.id
 
   #Optional
   options {
@@ -142,12 +144,12 @@ resource "oci_containerengine_cluster" "test_cluster" {
 
 resource "oci_containerengine_node_pool" "test_node_pool" {
   #Required
-  cluster_id         = "${oci_containerengine_cluster.test_cluster.id}"
-  compartment_id     = "${var.compartment_ocid}"
-  kubernetes_version = "${data.oci_containerengine_node_pool_option.test_node_pool_option.kubernetes_versions.0}"
+  cluster_id         = oci_containerengine_cluster.test_cluster.id
+  compartment_id     = var.compartment_ocid
+  kubernetes_version = data.oci_containerengine_node_pool_option.test_node_pool_option.kubernetes_versions.0
   name               = "tfPool"
   node_shape         = "VM.Standard2.1"
-  subnet_ids         = ["${oci_core_subnet.nodePool_Subnet_1.id}", "${oci_core_subnet.nodePool_Subnet_2.id}"]
+  subnet_ids         = [oci_core_subnet.nodePool_Subnet_1.id, oci_core_subnet.nodePool_Subnet_2.id]
 
   #Optional
   initial_node_labels {
@@ -158,12 +160,12 @@ resource "oci_containerengine_node_pool" "test_node_pool" {
 
   node_source_details {
     #Required
-    image_id    = "${data.oci_containerengine_node_pool_option.test_node_pool_option.sources.0.image_id}"
-    source_type = "${data.oci_containerengine_node_pool_option.test_node_pool_option.sources.0.source_type}"
+    image_id    = data.oci_containerengine_node_pool_option.test_node_pool_option.sources.0.image_id
+    source_type = data.oci_containerengine_node_pool_option.test_node_pool_option.sources.0.source_type
   }
 
   quantity_per_subnet = 2
-  ssh_public_key      = "${var.node_pool_ssh_public_key}"
+  #ssh_public_key      = "${var.node_pool_ssh_public_key}"
 }
 
 output "cluster" {
@@ -208,7 +210,6 @@ data "oci_containerengine_cluster_kube_config" "test_cluster_kube_config" {
 }
 
 resource "local_file" "test_cluster_kube_config_file" {
-  content  = "${data.oci_containerengine_cluster_kube_config.test_cluster_kube_config.content}"
   filename = "${path.module}/test_cluster_kubeconfig"
 }
 
@@ -217,7 +218,7 @@ data "oci_identity_availability_domains" "test_availability_domains" {
 }
 
 variable "InstanceImageOCID" {
-  type = "map"
+  type = map
 
   default = {
     // See https://docs.us-phoenix-1.oraclecloud.com/images/
