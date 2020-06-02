@@ -11,6 +11,10 @@ variable "region" {
   default = "us-ashburn-1"
 }
 
+variable "clusterName" {
+  default = "tfTest-cluster"
+}
+
 variable "node_pool_ssh_public_key" {
   default = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZUL5w4JXDirnYLwlBjhm8SV/INNuUIKp4WBuEk8WAzin/Zmr6MocUEyB/JijFwTpsp4ZKAreHS1uE/fLsq7G0uPbxKjLx+Y9C2BKeA/jzam1j6WddH6OFx/u2HjwfnowZqqRapltpCJFn5HIk0vV8cbRbWMEeOqUg0AQO3yM+dmMgbIzRmB65coDMhoP2dCDoejZblPwhkhX6r5CxlrPyLFhAJwHkkOAFNmFzvSgymOneCw/eGtZDk1xWHE6iBlbWPdhqlhRoqs0JSdYMXBQgDXclFkAZaky8wf+je3RS2dpVAu4riOBraIOg7w3cHx5AtcBOnX3ArezBC8Vm365t"
 }
@@ -114,7 +118,7 @@ resource "oci_containerengine_cluster" "test_cluster" {
   #Required
   compartment_id     = "${var.compartment_ocid}"
   kubernetes_version = "${data.oci_containerengine_cluster_option.test_cluster_option.kubernetes_versions.0}"
-  name               = "tfTestCluster"
+  name               = "${var.clusterName}"
   vcn_id             = "${oci_core_vcn.test_vcn.id}"
 
   #Optional
