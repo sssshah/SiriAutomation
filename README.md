@@ -15,4 +15,4 @@ https://blogs.oracle.com/cloud-infrastructure/hey-siri-create-my-container-engin
 - ocirmtf.zip  used with the Oracle Resource Manager (Not meant to vbe used with Siri)
 
 ### Step-by-step instructions 
-Please download the High Level Steps.pdf
+Please download the Step by step guide.pdf
